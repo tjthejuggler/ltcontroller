@@ -55,7 +55,8 @@ def change_brightness(value):
 	cur_brightness = int(value/16)
 	print('send brightness', cur_brightness)
 	data = struct.pack("!BB", 0x10, cur_brightness)
-	s.sendto(udp_header+data, ('192.168.43.35', 41412));
+	for ball_num in active_balls:
+		s.sendto(udp_header+data, ('192.168.43.'+ball_num, 41412));
 
 #color_last_changed = 0
 
@@ -71,25 +72,15 @@ def change_color(color, value):
 	#color_last_changed = time.time()
 	cur_color[color] = value
 	data = struct.pack("!BBBB", 0x0a, cur_color['red']*2, cur_color['green']*2, cur_color['blue']*2)
-	s.sendto(udp_header+data, ('192.168.43.35', 41412));
-
-# def send_color():
-# 	if time.time() - color_last_changed < 2000:
-# 		print('send color')
-# 		data = struct.pack("!BBBB", 0x10, cur_color['red'], cur_color['green'], cur_color['blue'])
-# 		s.sendto(udp_header+data, ('192.168.43.35', 41412));
-
-# def send_brightness():
-# 	print('time', time.time())
-# 	print('brightness_last_changed',brightness_last_changed)
-# 	if time.time() - brightness_last_changed < 2000:
-# 		print('send brightness', cur_brightness)
-# 		data = struct.pack("!BB", 0x10, cur_brightness)
-# 		s.sendto(udp_header+data, ('192.168.43.35', 41412));
+	for ball_num in active_balls:
+		print('ball_num',ball_num)
+		s.sendto(udp_header+data, ('192.168.43.'+ball_num, 41412));
 
 
-		
+
+active_balls = ['35']		
 def input_main(device_id = None):
+	global active_balls
 	pygame.init()
 	pygame.fastevent.init()
 	event_get = pygame.fastevent.get
@@ -123,17 +114,23 @@ def input_main(device_id = None):
 			if e.type in [pygame.midi.MIDIIN]:
 				if e.data1 == 7:
 					change_color('red', e.data2)
-					print('red', e.data2)
 				if e.data1 == 11:
 					change_color('green', e.data2)
-					print('green', e.data2)
 				if e.data1 == 15:
 					change_color('blue', e.data2)
-					print('blue', e.data2)
 				if e.data1 == 19:
 					change_brightness(e.data2)
-					print('fade', e.data2)
-
+				if e.data1 == 27:
+					print('active_balls 35')
+					active_balls = ['35']
+				if e.data1 == 30:
+					print('active_balls 85')
+					active_balls =  ['85']
+				if e.data1 == 32:
+					print('active_balls 240')
+					active_balls =  ['240']
+				if e.data1 == 34:
+					active_balls = ['35','85','240']
 				else:
 					print ("event data",e)
 			#if e.
